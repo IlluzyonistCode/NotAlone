@@ -12,6 +12,7 @@ import { WebSocketServer } from 'ws';
 import { getServerSession } from './util/functions.js';
 import resolvers from './graphql/resolvers/index.js';
 import typeDefs from './graphql/typeDefs/index.js';
+import { syncUser, loginWithCredentials, registerUser, getUserByEmail, getUserById } from './api/auth.js';
 import * as dotenv from 'dotenv';
 import cors from 'cors';
 import json from 'body-parser';
@@ -122,12 +123,25 @@ const main = async () => {
     legacyHeaders: false
   });
 
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
   app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', process.env.BASE_URL);
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
 
     next();
   });
+
+  app.post('/api/auth/sync', syncUser);
+  app.post('/api/auth/login', loginWithCredentials);
+  app.post('/api/auth/register', registerUser);
+  app.get('/api/auth/user/:email', getUserByEmail);
+  app.get('/api/auth/id/:id', getUserById);
 
   app.use('/graphql', dbLimiter);
 

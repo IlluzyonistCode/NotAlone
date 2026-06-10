@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-export default {
+const UserOperations = {
   Queries: {
     searchUsers: gql`
       query SearchUsers($username: String!) {
@@ -24,3 +24,5 @@ export default {
   },
   Subscriptions: {}
 };
+
+export default UserOperations;

@@ -29,6 +29,7 @@ const ConversationItem = ({
   conversation,
   selectedConversationId,
   hasSeenLatestMessage,
+  unreadCount,
   onClick,
   onEditConversation,
   onDeleteConversation,
@@ -140,11 +141,23 @@ const ConversationItem = ({
             })}
           </Text>
 
-          {hasSeenLatestMessage === false && (
-            <Box mt={1}>
-              <FaCircle fontSize={12} color='white' />
-            </Box>
-          )}
+        {!hasSeenLatestMessage && (
+          <Box mt={1}>
+            <Flex
+              align='center'
+              justify='center'
+              bg='blue.500'
+              borderRadius='full'
+              minW='20px'
+              h='20px'
+              px={1}
+            >
+              <Text fontSize='xs' fontWeight='bold' color='white'>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </Flex>
+          </Box>
+        )}
         </Stack>
       </Flex>
     </Stack>

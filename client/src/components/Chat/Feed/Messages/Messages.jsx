@@ -6,9 +6,15 @@ import toast from 'react-hot-toast';
 import MessageOperations from '../../../../graphql/operations/messages';
 import SkeletonLoader from '../../../common/SkeletonLoader';
 import MessageItem from './MessageItem';
+import HugAnimation from '../Animations/HugAnimation';
+import KissAnimation from '../Animations/KissAnimation';
+import HeartAnimation from '../Animations/HeartAnimation';
 
 const Messages = ({ userId, conversationId }) => {
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
+  const [showKissAnimation, setShowKissAnimation] = useState(false);
+  const [showHugAnimation, setShowHugAnimation] = useState(false);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
 
   const virtuosoRef = useRef(null);
 
@@ -71,6 +77,33 @@ const Messages = ({ userId, conversationId }) => {
         if (!subscriptionData.data) return prev;
 
         const newMessage = subscriptionData.data.messageSent;
+
+        if (newMessage.sender.id !== userId) {
+          if (newMessage.type === 'HUG') {
+            setShowHugAnimation(true);
+
+            setTimeout(() => setShowKissAnimation(false), 3000);
+          } else if (newMessage.type === 'KISS') {
+            setShowKissAnimation(true);
+
+            setTimeout(() => setShowHugAnimation(false), 3000);
+          } else if (newMessage.type === 'HEART') {
+            setShowHeartAnimation(true);
+
+            setTimeout(() => setShowHeartAnimation(false), 3000);
+          }
+
+          else if (newMessage.body.includes('💋') || newMessage.body.includes('😘')) {
+            setShowKissAnimation(true);
+              
+            setTimeout(() => setShowKissAnimation(false), 3000);
+          } else if (newMessage.body.includes('❤️') || newMessage.body.includes('💕') || newMessage.body.includes('💖') || newMessage.body.includes('💗') || newMessage.body.includes('💓') || newMessage.body.includes('💝')) {
+            setShowHeartAnimation(true);
+              
+            setTimeout(() => setShowHeartAnimation(false), 3000);
+          }
+        }
+
         const newMessages = [...prev.messages, newMessage];
 
         if (scrolledToBottom && virtuosoRef.current) {
@@ -90,7 +123,7 @@ const Messages = ({ userId, conversationId }) => {
     });
 
     return () => unsubscribe();
-  }, [conversationId, scrolledToBottom]);
+  }, [conversationId, scrolledToBottom, subscribeToMore, userId]);
 
   useEffect(() => {
     const unsubscribe = subscribeToMore({
@@ -111,7 +144,7 @@ const Messages = ({ userId, conversationId }) => {
     });
 
     return () => unsubscribe();
-  }, [conversationId]);
+  }, [conversationId, subscribeToMore]);
 
   useEffect(() => {
     if (!loading && virtuosoRef.current && messages.length) {
@@ -138,56 +171,61 @@ const Messages = ({ userId, conversationId }) => {
   if (error) return;
 
   return (
-    <Flex
-      direction='column'
-      height='100%'
-      justify='flex-end'
-      overflow='hidden'
-    >
-      {loading && (
-        <Stack spacing={4} px={4}>
-          <SkeletonLoader count={4} height='60px' width='100%' />
-        </Stack>
-      )}
-      {messages && (
-        <Box height='100%'>
-          <Virtuoso
-            ref={virtuosoRef}
-            data={messages}
-            initialTopMostItemIndex={messages.length - 1}
-            alignToBottom={false}
-            followOutput={() => false}
-            atBottomStateChange={setScrolledToBottom}
-            atBottomThreshold={50}
-            overscan={20}
-            itemContent={(index, message) => (
-              message.type === 'buffer'
-              ? <div style={{
-                 height: `${window.innerHeight * 0.15}px`,
-                 opacity: 0,
-                 minHeight: '50px',
-                 maxHeight: '100px',
-                 pointerEvents: 'none'
-                }} />
-              : <MessageItem
-                  key={message.id}
-                  message={message}
-                  sentByMe={message.sender.id === userId}
-                  onDeleteMessage={onDeleteMessage}
-              />
-            )}
-            components={{
-              Header: () => <div style={{ height: '10px', background: 'transparent' }} />,
-              Footer: () => <div style={{ height: '20px', background: 'transparent' }} />
-            }}
-            style={{
-              height: '100%',
-              overflowX: 'hidden'
-            }}
-          />
-        </Box>
-      )}
-    </Flex>
+    <>
+      {showKissAnimation && <KissAnimation onComplete={() => setShowKissAnimation(false)} />}
+      {showHugAnimation && <HugAnimation onComplete={() => setShowHugAnimation(false)} />}
+      {showHeartAnimation && <HeartAnimation onComplete={() => setShowHeartAnimation(false)} />}
+      <Flex
+        direction='column'
+        height='100%'
+        justify='flex-end'
+        overflow='hidden'
+      >
+        {loading && (
+          <Stack spacing={4} px={4}>
+            <SkeletonLoader count={4} height='60px' width='100%' />
+          </Stack>
+        )}
+        {messages && (
+          <Box height='100%'>
+            <Virtuoso
+              ref={virtuosoRef}
+              data={messages}
+              initialTopMostItemIndex={messages.length - 1}
+              alignToBottom={false}
+              followOutput={() => false}
+              atBottomStateChange={setScrolledToBottom}
+              atBottomThreshold={50}
+              overscan={20}
+              itemContent={(index, message) => (
+                message.type === 'buffer'
+                ? <div style={{
+                   height: `${window.innerHeight * 0.15}px`,
+                   opacity: 0,
+                   minHeight: '50px',
+                   maxHeight: '100px',
+                   pointerEvents: 'none'
+                  }} />
+                : <MessageItem
+                    key={message.id}
+                    message={message}
+                    sentByMe={message.sender.id === userId}
+                    onDeleteMessage={onDeleteMessage}
+                />
+              )}
+              components={{
+                Header: () => <div style={{ height: '10px', background: 'transparent' }} />,
+                Footer: () => <div style={{ height: '20px', background: 'transparent' }} />
+              }}
+              style={{
+                height: '100%',
+                overflowX: 'hidden'
+              }}
+            />
+          </Box>
+        )}
+      </Flex>
+    </>
   );
 };
 

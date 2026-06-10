@@ -114,7 +114,7 @@ const ConversationList = ({
         getUserParticipantObject={getUserParticipantObject}
       />
       {sortedConversations.map((conversation) => {
-        const { hasSeenLatestMessage } = getUserParticipantObject(conversation);
+        const { hasSeenLatestMessage, unreadCount } = getUserParticipantObject(conversation);
 
         return (
           <ConversationItem
@@ -122,6 +122,7 @@ const ConversationList = ({
             userId={session.user.id}
             conversation={conversation}
             hasSeenLatestMessage={hasSeenLatestMessage}
+            unreadCount={unreadCount}
             selectedConversationId={conversationId}
             onClick={() =>
               onViewConversation(conversation.id, hasSeenLatestMessage)

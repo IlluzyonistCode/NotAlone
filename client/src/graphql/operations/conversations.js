@@ -11,13 +11,14 @@ const ConversationFields = `
       image
     }
     hasSeenLatestMessage
+    unreadCount
   }
   latestMessage {
     ${MessageFields}
   }
 `;
 
-export default {
+const ConversationOperations = {
   Queries: {
     conversations: gql`
       query Conversations {
@@ -88,3 +89,5 @@ export default {
     `
   }
 };
+
+export default ConversationOperations;

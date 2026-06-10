@@ -1,11 +1,20 @@
 import gql from 'graphql-tag';
 
 const typeDefs = gql`
+  enum MessageType {
+    TEXT
+    HUG
+    KISS
+    HEART
+    SYSTEM
+  }
+
   type Message {
     id: String
     sender: User
     body: String
     attachment: String
+    type: MessageType
     createdAt: Date
   }
 
@@ -20,6 +29,7 @@ const typeDefs = gql`
       senderId: String
       body: String
       attachment: String
+      type: MessageType
     ): Boolean
     deleteMessage(messageId: String!): Boolean
   }

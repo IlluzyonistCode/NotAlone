@@ -5,6 +5,7 @@ import React from 'react';
 import ConversationOperations from '../../../../graphql/operations/conversations';
 import { formatUsernames } from '../../../../util/functions';
 import SkeletonLoader from '../../../common/SkeletonLoader';
+import DaysCounter from './DaysCounter';
 
 const MessagesHeader = ({ userId, conversationId }) => {
   const router = useRouter();
@@ -23,15 +24,18 @@ const MessagesHeader = ({ userId, conversationId }) => {
       align='center'
       spacing={6}
       py={5}
-      px={{ base: 4, md: 0 }}
+      px={{ base: 4, md: 6 }}
       borderBottom='1px solid'
       borderColor='whiteAlpha.200'
     >
       <Button
-        display={{ md: 'none' }}
-        onClick={() =>
+       display={{ base: 'flex', md: 'none' }}
+       leftIcon={<span>←</span>}
+       variant='ghost'
+       size='sm'
+       onClick={() =>
           router.replace('?conversationId', '/', {
-            shallow: true,
+            shallow: true
           })
         }
       >
@@ -45,6 +49,7 @@ const MessagesHeader = ({ userId, conversationId }) => {
           <Text fontWeight={600}>
             {formatUsernames(conversation.participants, userId)}
           </Text>
+          {/*<DaysCounter conversationId={conversationId} />*/}
         </Stack>
       )}
     </Stack>

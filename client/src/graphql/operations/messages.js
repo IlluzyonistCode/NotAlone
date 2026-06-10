@@ -9,10 +9,11 @@ export const MessageFields = `
   }
   body
   attachment
+  type
   createdAt
 `;
 
-export default {
+const MessageOperations = {
   Query: {
     messages: gql`
       query Messages($conversationId: String!) {
@@ -30,6 +31,7 @@ export default {
         $senderId: String!
         $body: String!
         $attachment: String!
+        $type: MessageType
       ) {
         sendMessage(
           id: $id
@@ -37,6 +39,7 @@ export default {
           senderId: $senderId
           body: $body
           attachment: $attachment
+          type: $type
         )
       }
     `,
@@ -63,3 +66,5 @@ export default {
     `
   }
 };
+
+export default MessageOperations;

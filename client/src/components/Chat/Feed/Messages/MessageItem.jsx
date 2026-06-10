@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { formatRelative } from 'date-fns';
 import enUS from 'date-fns/locale/en-US';
+import emojiRegex from 'emoji-regex';
 import React, { useState } from 'react';
 import { MdDeleteOutline } from 'react-icons/md';
 
@@ -34,11 +35,55 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
     };
   };
 
+  const extractUrls = (text) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    return text.match(urlRegex) || [];
+  };
+
+  const formatMessageWithLinks = (text) => {
+    if (!text) return text;
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ color: '#FF69B4', textDecoration: 'underline' }}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   const isEmojiOnly = (text) => {
     const trimmed = text.trim();
-    const emojiRegex = /^(?:\p{Emoji}\s?){1,3}$/u;
 
-    return emojiRegex.test(trimmed) && !trimmed.match(/[a-zA-Z0-9]/);
+    if (!trimmed) return false;
+
+    if (/[a-zA-Zа-яА-ЯёЁ0-9]/i.test(trimmed)) return false;
+
+    const regex = emojiRegex();
+    const emojis = trimmed.match(regex);
+    
+    if (!emojis) return false;
+
+    const onlyEmojis = emojis.join('');
+    const trimmedNoSpaces = trimmed.replace(/\s/g, '');
+    const onlyEmojisNoSpaces = onlyEmojis.replace(/\s/g, '');
+
+    const isOnlyEmojis = trimmedNoSpaces === onlyEmojisNoSpaces;
+    
+    return isOnlyEmojis && emojis.length >= 1 && emojis.length <= 3;
   };
 
   const handleClick = (event) => {
@@ -62,6 +107,11 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
   };
 
   const emojiMode = !message.attachment && isEmojiOnly(message.body);
+  const romanticMode = message.type === 'HUG' || message.type === 'KISS' || message.type === 'HEART';
+  const hugMode = message.type === 'HUG';
+  const kissMode = message.type === 'KISS';
+  const heartMode = message.type === 'HEART';
+  const urls = !message.attachment ? extractUrls(message.body) : [];
 
   return (
     <Stack
@@ -86,7 +136,6 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
               icon={<MdDeleteOutline fontSize={20} />}
               onClick={(event) => {
                 event.stopPropagation();
-
                 onDeleteMessage(message.id);
               }}
             >
@@ -101,6 +150,7 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
           <Avatar src={message.sender.image} size='sm' />
         </Flex>
       )}
+      
       <Stack spacing={1} width='100%'>
         <Stack
           direction='row'
@@ -121,9 +171,13 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
             })}
           </Text>
         </Stack>
+        
         <Flex direction='row' justify={sentByMe ? 'flex-end' : 'flex-start'}>
           <Box
-            bg={emojiMode ? 'none' : sentByMe ? 'brand.100' : 'whiteAlpha.300'}
+            bg={romanticMode ? 'linear-gradient(135deg, rgba(255,105,180,0.3), rgba(255,20,147,0.2))' :
+                emojiMode ? 'none' : 
+                sentByMe ? 'brand.100' : 'whiteAlpha.300'}
+            border={romanticMode ? '1px solid rgba(255,105,180,0.5)' : 'none'}
             px={emojiMode ? 0 : 2}
             py={emojiMode ? 0 : 1}
             maxWidth={emojiMode ? 'none' : '65%'}
@@ -139,7 +193,7 @@ const MessageItem = ({ message, sentByMe, onDeleteMessage }) => {
                 whiteSpace: 'pre-line'
               }}
             >
-              {message.body.trim()}
+              {formatMessageWithLinks(message.body.trim())}
             </Text>
 
             {message.attachment && (

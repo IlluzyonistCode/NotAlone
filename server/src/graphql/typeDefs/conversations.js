@@ -12,6 +12,7 @@ const typeDefs = gql`
     id: String
     user: User
     hasSeenLatestMessage: Boolean
+    unreadCount: Int
   }
 
   type CreateConversationResponse {
